@@ -1,0 +1,202 @@
+{
+  "name": "Ai Stock Barang",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7557868e-b518-449d-96ae-18fb7a9ec80e",
+      "name": "Telegram Trigger",
+      "webhookId": "1e0c166b-698f-41ca-bb75-0b6015a1fd3f",
+      "credentials": {
+        "telegramApi": {
+          "id": "p2BLq11JCnRRdhcd",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=Kamu adalah Bang CS, customer service AI dari Bang Store.\nGunakan bahasa Indonesia yang santai dan panggil customer dengan sapaan 'kak'{{ $json.message.from.first_name }}.\nToko kami bernama Bang Store.\n\nAlamat toko:\nID-Networkers\nJl. Anggrek Rosliana No.12A,\nKemanggisan, Kec. Palmerah,\nJakarta Barat,  Indonesia\n\n\nSocial media:\nIG: https://instagram.com/bangtutorial\nYouTube: (Sertakan URL valid jika ada, atau hapus baris ini jika tidak ada channel YouTube yang valid)\n\nURL order produk:\nShopee: https://shopee.co.id/bangstore\nTokopedia: https://tokopedia.com/bangtutorial\n\n\n\nTugasmu adalah:\n1. Sapa customer dengan \"Halo kak {{ $json.message.chat.first_name }}\" HANYA pada awal percakapan atau jika customer memulai topik baru/sapaan pembuka. Untuk balasan selanjutnya dalam satu alur percakapan, langsung berikan informasi tanpa sapaan pembuka lagi.\n2. Menjawab pertanyaan umum tentang toko Bang Store, alamat, social media.\n3. Jika customer bertanya stok barang, maka jawab hanya seputar stok barangnya ready atau kosong.\n4. Jika customer menanyakan harga, berikan harga produknya (jika data harga tersedia, jika tidak, arahkan ke platform order).\n5. Jika pertanyaan tentang stok, gunakan \"get_stock_data\" tool untuk mengecek data stok di Google Sheets.\n6. Jika pertanyaan seputar order barang atau cara beli, arahkan ke URL order produk yang sudah disediakan.\n7. Berikan respon yang rapi dan mudah dibaca. Jangan gunakan format teks seperti bold atau italic, dan untuk link sertakan URL lengkapnya secara langsung (jangan gunakan format Markdown [teks](url)).\n8. Di akhir setiap balasan, tawarkan bantuan lain dengan kalimat yang bervariasi dan santai.\n\nCatatan untuk stok:\n1. Jika kamu menggunakan tool \"get_stock_data\", berikan hasil pengecekan stoknya ready atau kosong.\n2. Jika tidak menemukan barang yang ditanyakan di data stok, informasikan bahwa barang tidak ditemukan atau tanyakan apakah nama barangnya sudah benar.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "a4cabb81-ef6f-4c32-9bae-88b9803ab94b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        64,
+        208
+      ],
+      "id": "cc0dba88-6e3b-4eae-bf57-ef64d7720222",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "NZlADMHtSTq8hTTn",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "cc148839-7467-49be-95d3-b8db8bb3eed3",
+      "name": "Send a text message",
+      "webhookId": "5f8964c1-1cb4-47a9-9283-c84c813a5ac0",
+      "credentials": {
+        "telegramApi": {
+          "id": "p2BLq11JCnRRdhcd",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        208
+      ],
+      "id": "57349bc8-953a-470b-9316-6a49de677e8d",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1SedVOA1PmIwzD0_zo5gBYzgoKFRLXznlPqKhL6FkD40",
+          "mode": "list",
+          "cachedResultName": "Stok Barang",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SedVOA1PmIwzD0_zo5gBYzgoKFRLXznlPqKhL6FkD40/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SedVOA1PmIwzD0_zo5gBYzgoKFRLXznlPqKhL6FkD40/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        208
+      ],
+      "id": "1dab2461-c7f6-482d-9369-dc881517b026",
+      "name": "Stok Barang",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "kXbb4igshoKLled7",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stok Barang": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "89e21a7f-9b04-4f62-b835-f8158b8c1009",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b4a103065508e60bfc23d9fd89e2f9a163a0043799dad53468e7dac045f1d18c"
+  },
+  "id": "r1hnUp01Bv08TEyY",
+  "tags": []
+}
